@@ -59,4 +59,12 @@ cd8.58 <- cd8[, as.numeric(lapply(samples.a, grep, colnames(cd8), fixed = T))]
 cd4.58 <- cd4[, as.numeric(lapply(samples.a, grep, colnames(cd4), fixed = T))]
 ########################### SLE ###########################
 
-
+# Load the manually downloaded expression set of the E-MTAB-157
+sle <- load(file.path(data.folder, "E-MTAB-157.eSet.r"))
+sle <- study
+clinic_sle <- pData(sle)
+SLE <- subset(clinic_sle, 
+              Factor.Value..DISEASESTATE. == "Systemic lupus erythematosus")
+pData(sle) <- SLE
+exp <- read.delim(sdrf[grepl("157", sdrf)])
+SLE[,"Derived.Array.Data.Matrix.File"]
