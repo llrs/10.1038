@@ -36,21 +36,27 @@ cd4 <- read.delim(grep("CD4", aav, value = T), row.names = 1)
 cd8 <- cd8[-1, ]
 cd4 <- cd4[-1, ]
 
-cd8_names <- strsplit(colnames(cd8), ".", fixed = T)
-cd4_names <- strsplit(colnames(cd4), ".", fixed = T)
+cd8.names <- strsplit(colnames(cd8), ".", fixed = T)
+cd4.names <- strsplit(colnames(cd4), ".", fixed = T)
   
-cd8_patients <- as.character(lapply(cd8_names, `[[`, 1))
-cd4_patients <- as.character(lapply(cd4_names, `[[`, 1))
+cd8.patients <- as.character(lapply(cd8.names, `[[`, 1))
+cd4.patients <- as.character(lapply(cd4.names, `[[`, 1))
 
 # Intersect of the samples in both datasets
-samples <- intersect(cd4_patients, cd8_patients)
+samples_a <- intersect(cd4.patients, cd8.patients)
 # Selecting those that start with V
 # They are the n= 44 showed on the letter
-samples <- samples[grepl("^V", samples)]
+samples <- samples[grepl("^V", samples.a)]
 samples <- paste0(samples, ".")
+samples.a <- paste0(samples.a, ".")
 
 # Filtering for just this 44 samples
-cd8_f <- cd8[, as.numeric(lapply(samples, grep, colnames(cd8), fixed = T))]
-cd4_f <- cd4[, as.numeric(lapply(samples, grep, colnames(cd4), fixed = T))]
+cd8.44 <- cd8[, as.numeric(lapply(samples, grep, colnames(cd8), fixed = T))]
+cd4.44 <- cd4[, as.numeric(lapply(samples, grep, colnames(cd4), fixed = T))]
 
+# Filtering for just this 58 samples
+cd8.58 <- cd8[, as.numeric(lapply(samples.a, grep, colnames(cd8), fixed = T))]
+cd4.58 <- cd4[, as.numeric(lapply(samples.a, grep, colnames(cd4), fixed = T))]
 ########################### SLE ###########################
+
+
