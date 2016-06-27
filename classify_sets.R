@@ -26,8 +26,9 @@ txt <- list.files(data.folder, pattern = ".txt", full.names = T)
 aav <- list.files(data.folder, pattern = "aav", full.names = T)
 processed <- list.files(data.folder, pattern = "(.processed.*.zip)", 
                         full.names = T)
+names(aav) <-basename(aav)
 
-cd8 <- grep("CD8", aav, value = T)
-cd4 <- grep("CD4", aav, value = T)
-cd8 <- read.delim(cd8, row.names = 1)
-cd4 <- read.delim(cd4, row.names = 1)
+# Relays on the fact that there is only one file with CDX
+cd8 <- read.delim(grep("CD8", aav, value = T), row.names = 1)
+cd4 <- read.delim(grep("CD4", aav, value = T), row.names = 1)
+
