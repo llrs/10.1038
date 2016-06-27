@@ -26,9 +26,31 @@ txt <- list.files(data.folder, pattern = ".txt", full.names = T)
 aav <- list.files(data.folder, pattern = "aav", full.names = T)
 processed <- list.files(data.folder, pattern = "(.processed.*.zip)", 
                         full.names = T)
+
+########################### AAV ###########################
 names(aav) <-basename(aav)
 
 # Relays on the fact that there is only one file with CDX
 cd8 <- read.delim(grep("CD8", aav, value = T), row.names = 1)
 cd4 <- read.delim(grep("CD4", aav, value = T), row.names = 1)
+cd8 <- cd8[-1, ]
+cd4 <- cd4[-1, ]
 
+cd8_names <- strsplit(colnames(cd8), ".", fixed = T)
+cd4_names <- strsplit(colnames(cd4), ".", fixed = T)
+  
+cd8_patients <- as.character(lapply(cd8_names, `[[`, 1))
+cd4_patients <- as.character(lapply(cd4_names, `[[`, 1))
+
+# Intersect of the samples in both datasets
+samples <- intersect(cd4_patients, cd8_patients)
+# Selecting those that start with V
+# They are the n= 44 showed on the letter
+samples <- samples[grepl("^V", samples)]
+samples <- paste0(samples, ".")
+
+# Filtering for just this 44 samples
+cd8_f <- cd8[, as.numeric(lapply(samples, grep, colnames(cd8), fixed = T))]
+cd4_f <- cd4[, as.numeric(lapply(samples, grep, colnames(cd4), fixed = T))]
+
+########################### SLE ###########################
