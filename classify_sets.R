@@ -21,6 +21,7 @@ source("download_datasets.R")
 sdrf <- list.files(data.folder, pattern = "(sdrf.txt)", full.names = T)
 idf <- list.files(data.folder, pattern = "(idf.txt)", full.names = T)
 raw <- list.files(data.folder, pattern = "(.raw.*.zip)", full.names = T)
+proc <- list.files(data.folder, pattern = "(.processed.*.zip)", full.names = T)
 adf <- list.files(data.folder, pattern = "(adf)", full.names = T)
 txt <- list.files(data.folder, pattern = ".txt", full.names = T)
 aav <- list.files(data.folder, pattern = "aav", full.names = T)
@@ -33,12 +34,15 @@ names(aav) <-basename(aav)
 # Relays on the fact that there is only one file with CDX
 cd8 <- read.delim(grep("CD8", aav, value = T), row.names = 1)
 cd4 <- read.delim(grep("CD4", aav, value = T), row.names = 1)
+# Remove the log2 row
 cd8 <- cd8[-1, ]
 cd4 <- cd4[-1, ]
 
+# Extract the names of samples
 cd8.names <- strsplit(colnames(cd8), ".", fixed = T)
 cd4.names <- strsplit(colnames(cd4), ".", fixed = T)
-  
+
+# Obtain the list of names of samples
 cd8.patients <- as.character(lapply(cd8.names, `[[`, 1))
 cd4.patients <- as.character(lapply(cd4.names, `[[`, 1))
 
@@ -60,11 +64,25 @@ cd4.58 <- cd4[, as.numeric(lapply(samples.a, grep, colnames(cd4), fixed = T))]
 ########################### SLE ###########################
 
 # Load the manually downloaded expression set of the E-MTAB-157
-sle <- load(file.path(data.folder, "E-MTAB-157.eSet.r"))
+load(file.path(data.folder, "E-MTAB-157.eSet.r"))
 sle <- study
-clinic_sle <- pData(sle)
-SLE <- subset(clinic_sle, 
+clinic.sle <- pData(sle)
+clinic.sle <- as.data.frame(apply(clinic.sle, 2, as.factor))
+SLE <- subset(clinic.sle, 
               Factor.Value..DISEASESTATE. == "Systemic lupus erythematosus")
-pData(sle) <- SLE
-exp <- read.delim(sdrf[grepl("157", sdrf)])
-SLE[,"Derived.Array.Data.Matrix.File"]
+# Function to concatenate the name of the files if they are paired by swapping
+SLE.2 <- SLE[, c("Source.Name.Cy3", "Source.Name.Cy5")]
+sub <- subset(SLE, Source.Name.Cy3 == "S40" | Source.Name.Cy5 == "S40", select = 0)
+xy <- rownames()
+libarary("IRanges")
+a <- paste0(reverse(xy), collapse = "")
+# Files processed
+sle.processed <- basename(levels(SLE$Comment..Derived.ArrayExpress.FTP.file.))
+proc.path <- file.path(data.folder, sle.processed)
+
+u.files <- unzip(proc.path, exdir = data.folder)
+sle.p <- read.delim(u.files)
+sle.p <- sle.p[-1, ] # Remove the log2 row
+
+nam.sle <- strsplit(levels(SLE$Scan.Name), ".", fixed = T)
+nam.sle <- as.character(lapply(nam.sle, `[[`, 1))
