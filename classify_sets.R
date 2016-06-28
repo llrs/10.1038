@@ -65,7 +65,9 @@ cd4.58 <- cd4[, as.numeric(lapply(samples.a, grep, colnames(cd4), fixed = T))]
 ########################### SLE ###########################
 
 # Load the manually downloaded expression set of the E-MTAB-157
-load(file.path(data.folder, "E-MTAB-157.eSet.r"))
+# load(file.path(data.folder, "E-MTAB-157.eSet.r"))
+# Or load from the online file
+source("http://www.ebi.ac.uk/arrayexpress/files/E-MTAB-157/E-MTAB-157.eSet.r")
 sle <- study
 clinic.sle <- pData(sle)
 clinic.sle <- as.data.frame(apply(clinic.sle, 2, as.factor))
