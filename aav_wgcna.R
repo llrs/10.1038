@@ -28,8 +28,9 @@ exp2 <- function(x) {
 cd4.exp <- apply(cd4.t, 1:2, exp2)
 cd8.exp <- apply(cd8.t, 1:2, exp2)
 
+exp_conditions <- list("CD4" = cd4.exp, "CD8" = cd8.exp)
 n <- 0
-for (exp in c(cd4.exp, cd8.exp)) {
+for (exp in exp_conditions) {
   n <- n + 1
   cat("Working with new data\n")
   # Checking if genes expression is ok
