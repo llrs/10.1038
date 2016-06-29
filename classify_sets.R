@@ -50,7 +50,9 @@ cd4.patients <- as.character(lapply(cd4.names, `[[`, 1))
 samples.a <- intersect(cd4.patients, cd8.patients)
 # Selecting those that start with V
 # They are the n= 44 showed on the letter
-samples <- samples[grepl("^V", samples.a)]
+samples <- samples.a[grepl("^V", samples.a)]
+
+#To avoid matching with V1 also V11=> V1. V11.
 samples <- paste0(samples, ".")
 samples.a <- paste0(samples.a, ".")
 
