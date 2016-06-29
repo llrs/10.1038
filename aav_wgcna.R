@@ -1,6 +1,6 @@
 # WGCNA of the AAV data
 
-source(classify_sets.R)
+source("classify_sets.R")
 
 library("WGCNA")
 options(stringsAsFactors = FALSE)
