@@ -6,14 +6,25 @@ library("WGCNA")
 options(stringsAsFactors = FALSE)
 enableWGCNAThreads()
 
+# Transpose to obtain the desired input for WGCNA
 cd4.t <- t(cd4.44)
 cd8.t <- t(cd8.44)
 
-exp2 <- function(x){
+# Transform to numeric values
+cd4.t <- apply(cd4.t, 2, as.numeric)
+cd8.t <- apply(cd8.t, 2, as.numeric)
+
+# Mantain the rownames
+rownames(cd4.t) <- colnames(cd4.44)
+rownames(cd8.t) <- colnames(cd8.44)
+
+
+exp2 <- function(x) {
   # Exponential of 2/ reverse of log2
-  return(2 ^ x)
+  return(2 ^ (x))
 }
 
+# Transform the log expression to raw expression
 cd4.exp <- apply(cd4.t, 1:2, exp2)
 cd8.exp <- apply(cd8.t, 1:2, exp2)
 
