@@ -25,14 +25,14 @@ rownames(cd8.t) <- colnames(cd8.44)
 # cd8.exp <- apply(cd8.t, 1:2, exp2)
 
 # Calculate the median absolute deviation values for all proves
-cd4.mad <- apply(cd4.t, 2, mad, na.rm = T)
-cd4.mad <- cd4.mad[!is.na(cd4.mad)]
-cd8.mad <- apply(cd8.t, 2, mad, na.rm = T)
-cd8.mad <- cd8.mad[!is.na(cd8.mad)]
+# cd4.mad <- apply(cd4.t, 2, mad, na.rm = T)
+# cd4.mad <- cd4.mad[!is.na(cd4.mad)]
+# cd8.mad <- apply(cd8.t, 2, mad, na.rm = T)
+# cd8.mad <- cd8.mad[!is.na(cd8.mad)]
 # plot(cd4.mad, 1 - rank(cd4.mad)/length(cd4.mad), 
 # ylab = "% of points over", main = "CD4)
-plot(cd8.mad, 1 - rank(cd8.mad)/length(cd8.mad), 
-     ylab = "% of points over", main = "CD8")
+# plot(cd8.mad, 1 - rank(cd8.mad)/length(cd8.mad), 
+#      ylab = "% of points over", main = "CD8")
 
 # Lacks of the filtering using inflexion point of the ranked list of mad. 
 
@@ -45,14 +45,17 @@ for (exp in exp_conditions) {
   # Checking if genes expression is ok
   gsg <- goodSamplesGenes(exp, verbose = 3)
   if (!gsg$allOK) {
-    if (sum(!gsg$goodGenes) > 0)
-      cat(paste("Removing genes:", sum(!gsg$goodGenes)))
-      genes <- paste(names(exp)[!gsg$goodGenes], collapse = ", ")
-      cat(paste("Removing genes:", genes))
-    if (sum(!gsg$goodSamples) > 0)
-      cat(paste("Removing samples:", sum(!gsg$goodSamples)))
-      samples <- paste(rownames(exp)[!gsg$goodSamples], collapse = ", ")
-      cat(paste("Removing samples:", samples))
+    if (sum(!gsg$goodGenes) > 0) {
+      cat(paste(sum(!gsg$goodGenes), "genes don't pass the filter."))
+      # genes <- paste(names(exp)[!gsg$goodGenes], collapse = ", ")
+      # cat(paste("Removing genes:", genes))
+    }
+    if (sum(!gsg$goodSamples) > 0){
+      cat(paste(sum(!gsg$goodSamples)), "samples don't pass the filter.")
+      # samples <- paste(rownames(exp)[!gsg$goodSamples], collapse = ", ")
+      # cat(paste("Removing samples:", samples))
+    }
+    cat("Removing genes and samples which don't pass the filter.")
     # Remove the offending genes and samples from the data:
     exp <- exp[gsg$goodSamples, gsg$goodGenes]
     
