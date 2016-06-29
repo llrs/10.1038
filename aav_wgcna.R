@@ -34,9 +34,17 @@ for (exp in exp_conditions) {
   n <- n + 1
   cat("Working with new data\n")
   # Checking if genes expression is ok
-  gsg <- goodSamplesGenes(exp, verbose = 1)
+  gsg <- goodSamplesGenes(exp, verbose = 3)
   if (!gsg$allOK) {
-    stop("Should check the sample.")
+    if (sum(!gsg$goodGenes) > 0)
+      genes <- paste(names(exp)[!gsg$goodGenes], collapse = ", ")
+      printFlush(paste("Removing genes:", genes))
+    if (sum(!gsg$goodSamples) > 0)
+      samples <- paste(rownames(exp)[!gsg$goodSamples], collapse = ", ")
+      printFlush(paste("Removing samples:", samples))
+    # Remove the offending genes and samples from the data:
+    exp <- exp[gsg$goodSamples, gsg$goodGenes]
+    
   }
   sampleTree <- hclust(dist(exp), method = "average")
   plot(sampleTree)
