@@ -10,38 +10,49 @@ enableWGCNAThreads()
 cd4.t <- t(cd4.44)
 cd8.t <- t(cd8.44)
 
-# Transform to numeric values
-cd4.t <- apply(cd4.t, 2, as.numeric)
-cd8.t <- apply(cd8.t, 2, as.numeric)
-
 # Mantain the rownames
 rownames(cd4.t) <- colnames(cd4.44)
 rownames(cd8.t) <- colnames(cd8.44)
 
 
-exp2 <- function(x) {
-  # Exponential of 2/ reverse of log2
-  return(2 ^ (x))
-}
+# exp2 <- function(x) {
+#   # Exponential of 2/ reverse of log2
+#   return(2 ^ (x))
+# }
+# 
+# # Transform the log expression to raw expression
+# cd4.exp <- apply(cd4.t, 1:2, exp2)
+# cd8.exp <- apply(cd8.t, 1:2, exp2)
 
-# Transform the log expression to raw expression
-cd4.exp <- apply(cd4.t, 1:2, exp2)
-cd8.exp <- apply(cd8.t, 1:2, exp2)
+# Calculate the median absolute deviation values for all proves
+cd4.mad <- apply(cd4.t, 2, mad, na.rm = T)
+cd4.mad <- cd4.mad[!is.na(cd4.mad)]
+cd8.mad <- apply(cd8.t, 2, mad, na.rm = T)
+cd8.mad <- cd8.mad[!is.na(cd8.mad)]
+# plot(cd4.mad, 1 - rank(cd4.mad)/length(cd4.mad), 
+# ylab = "% of points over", main = "CD4)
+plot(cd8.mad, 1 - rank(cd8.mad)/length(cd8.mad), 
+     ylab = "% of points over", main = "CD8")
+
+# Lacks of the filtering using inflexion point of the ranked list of mad. 
 
 exp_conditions <- list("CD4" = cd4.exp, "CD8" = cd8.exp)
+
 n <- 0
 for (exp in exp_conditions) {
+  cat(paste("Working with new data", names(exp_conditions)[n], "\n"))
   n <- n + 1
-  cat("Working with new data\n")
   # Checking if genes expression is ok
   gsg <- goodSamplesGenes(exp, verbose = 3)
   if (!gsg$allOK) {
     if (sum(!gsg$goodGenes) > 0)
+      cat(paste("Removing genes:", sum(!gsg$goodGenes)))
       genes <- paste(names(exp)[!gsg$goodGenes], collapse = ", ")
-      printFlush(paste("Removing genes:", genes))
+      cat(paste("Removing genes:", genes))
     if (sum(!gsg$goodSamples) > 0)
+      cat(paste("Removing samples:", sum(!gsg$goodSamples)))
       samples <- paste(rownames(exp)[!gsg$goodSamples], collapse = ", ")
-      printFlush(paste("Removing samples:", samples))
+      cat(paste("Removing samples:", samples))
     # Remove the offending genes and samples from the data:
     exp <- exp[gsg$goodSamples, gsg$goodGenes]
     
