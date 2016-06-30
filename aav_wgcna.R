@@ -39,14 +39,14 @@ cd8.mad <- cd8.mad[!is.na(cd8.mad)]
 library("RootsExtremaInflections")
 v2 <- 1 - rank(cd4.mad, ties.method = "random")/length(cd4.mad)
 rv2 <- rank(v2)
-infl4 <- inflexi(cd4.mad[rv2], v2[rv2], 1, 2000, 2, 5, "x", "y", 3,3)
+infl4 <- inflexi(cd4.mad[rv2], v2[rv2], 3000, 13000, 2, 5, "x", "y", 3,3)
 v4 <- cd4.mad[infl4$finfl][1]
 v2 <- 1 - rank(cd8.mad, ties.method = "random")/length(cd8.mad)
 rv2 <- rank(v2)
-infl8 <- inflexi(cd8.mad[rv2], v2[rv2], 1, 2000, 2, 5, "x", "y", 3,3)
+infl8 <- inflexi(cd8.mad[rv2], v2[rv2], 3000, 13000, 2, 5, "x", "y", 3,3)
 v8 <- cd8.mad[infl8$finfl][1]
 
-png("MAD_filtering.png", width = 2000, height = 2000)
+png("MAD_filtering.png", width = 1200, height = 1200)
 plot(cd4.mad, 1 - rank(cd4.mad)/length(cd4.mad),
   ylab = "% of points over", main = "MAD score", col = "blue")
 points(cd8.mad, 1 - rank(cd8.mad)/length(cd8.mad),
