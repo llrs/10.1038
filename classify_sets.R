@@ -29,6 +29,10 @@ processed <- list.files(data.folder, pattern = "(.processed.*.zip)",
                         full.names = T)
 
 ########################### AAV ###########################
+# E-MTAB-145
+# r145 <- "https://www.ebi.ac.uk/arrayexpress/files/E-MTAB-145/E-MTAB-145.eSet.r"
+# load(file.path(data.folder, basename(r145)))
+# a <- source(r145)
 names(aav) <- basename(aav)
 
 # Relays on the fact that there is only one file with CDX
@@ -63,7 +67,8 @@ cd4.44 <- cd4[, as.numeric(lapply(samples, grep, colnames(cd4), fixed = T))]
 # Filtering for just this 58 samples
 cd8.58 <- cd8[, as.numeric(lapply(samples.a, grep, colnames(cd8), fixed = T))]
 cd4.58 <- cd4[, as.numeric(lapply(samples.a, grep, colnames(cd4), fixed = T))]
-
+rm(cd8)
+rm(cd4)
 ########################### SLE ###########################
 
 # Load the manually downloaded expression set of the E-MTAB-157
