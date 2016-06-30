@@ -27,21 +27,63 @@ rownames(cd8.t) <- colnames(cd8.44)
 # cd8.exp <- apply(cd8.t, 1:2, exp2)
 
 # Calculate the median absolute deviation values for all proves
+
+
+
 cd4.mad <- apply(cd4.t, 2, mad, na.rm = T)
 cd4.mad <- cd4.mad[!is.na(cd4.mad)]
 cd8.mad <- apply(cd8.t, 2, mad, na.rm = T)
 cd8.mad <- cd8.mad[!is.na(cd8.mad)]
+
+# Calculate the inflection point
+library("RootsExtremaInflections")
+v2 <- 1 - rank(cd4.mad, ties.method = "random")/length(cd4.mad)
+rv2 <- rank(v2)
+infl4 <- inflexi(cd4.mad[rv2], v2[rv2], 1, 2000, 2, 5, "x", "y", 3,3)
+v4 <- cd4.mad[infl4$finfl][1]
+v2 <- 1 - rank(cd8.mad, ties.method = "random")/length(cd8.mad)
+rv2 <- rank(v2)
+infl8 <- inflexi(cd8.mad[rv2], v2[rv2], 1, 2000, 2, 5, "x", "y", 3,3)
+v8 <- cd8.mad[infl8$finfl][1]
+
 png("MAD_filtering.png", width = 2000, height = 2000)
 plot(cd4.mad, 1 - rank(cd4.mad)/length(cd4.mad),
   ylab = "% of points over", main = "MAD score", col = "blue")
 points(cd8.mad, 1 - rank(cd8.mad)/length(cd8.mad),
      ylab = "% of points over", col = "red")
+abline(v = c(v4, v8), col = c("blue","red"))
 legend("topright", legend = c("CD8", "CD4"),
        fill = c("red", "blue"))
 # Lacks of the filtering using inflexion point of the ranked list of mad.
 dev.off()
+
+
 exp_conditions <- list("CD4" = cd4.t, "CD8" = cd8.t)
 
+
+v2 <- v2[rv2]
+rcd4.mad <- cd4.mad[rv2]
+dy <- diff(v2)
+dy <- dy > 0
+dy <- dy*2 - 1 
+k <- 5
+cutoff <- 10
+scores <- sapply(k:(length(dy) - k), FUN = function(i, v){
+  score <- abs(mean(-v[ i - 1:k ], na.rm = T) + mean(v[ i + 0:k ], na.rm = T))
+}, v = dy)
+
+approx <- function(i, v){
+  left <- (v[sapply(i - 1:k, max, 1) ] < v[i])*2 - 1
+  right <- (v[sapply(i + 1:k, min, length(v)) ] < v[i]) * 2 - 1
+  
+  score <- abs(sum(left) + sum(right))
+}
+
+scores <- sapply(k:(length(v2) - k), approx, v = v2)
+
+inflections <- (k:(length(v2) - k))[scores >= cutoff]
+
+infl <- c(FALSE, diff(diff(v2) > 0) != 0)
 n <- 0
 for (exp in exp_conditions) {
   nam <- names(exp_conditions)[n]
