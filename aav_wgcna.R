@@ -56,41 +56,39 @@ count.p <- function(data, per){
 }
 
 perc.cd4 <- unlist(lapply(cd4.mad, count.p, data = cd4.mad))
-dy <- diff(perc.cd4)
-d2y <- diff(dy)
-dx <- diff(cd4.mad)
-d2x <- diff(dx)
-f1 <- dy/dx
 perc.cd8 <- unlist(lapply(cd8.mad, count.p, data = cd8.mad))
+library("inflection")
+infl.4 <- findiplist(cd4.mad, perc.cd4, 0)
+infl.8 <- findiplist(cd8.mad, perc.cd8, 0)
 png("MAD_filtering.png", width = 1200, height = 1200)
 plot(cd4.mad, perc.cd4,
-  ylab = "% of points over", main = "MAD score", col = "blue")
-points(cd8.mad, perc.cd8,
-     ylab = "% of points over", col = "red")
-#abline(v = c(v4, v8), col = c("blue","red"))
+  ylab = "Proportion of points over", main = "MAD score", col = "blue")
+points(cd8.mad, perc.cd8, col = "red")
+abline(v = c(infl.8[1, 3], infl.4[1, 3]), col = c("blue","red"))
 legend("topright", legend = c("CD8", "CD4"),
        fill = c("red", "blue"))
 # Lacks of the filtering using inflexion point of the ranked list of mad.
 dev.off()
+#
+# fitl <- loess(perc.cd4~cd4.mad)
+# xl <- seq(min(cd4.mad), max(cd4.mad), (max(cd4.mad) - min(cd4.mad))/1000)
+# out <- predict(fitl, xl)
+# infl <- c(FALSE, diff(diff(out) > 0) != 0)
+# plot(fitl)
+#
+# secant_method <- function(x, fun, x0, x1, iteration = 500, precision = 0.05, ...) {
+#   for (i in 1:iteration ) {
+#     x2 <- x[x1] - fun(x1, ...)*(x1 - x0)/(fun(x1, ...) - fun(x0, ...))
+#     if (abs(x2 - x1) < precision) {
+#       return(x2)
+#     }
+#     x0 <- x1
+#     x1 <- x2
+#   }
+#   stop("Exceeded allowed number of interactions")
+# }
 
-fitl <- loess(perc.cd4~cd4.mad)
-xl <- seq(min(cd4.mad), max(cd4.mad), (max(cd4.mad) - min(cd4.mad))/1000)
-out <- predict(fitl, xl)
-infl <- c(FALSE, diff(diff(out) > 0) != 0)
-plot(fitl)
-
-secant_method <- function(x, y, x0, x1, iteration = 500, precision = 0.05) {
-  for (i in 1:iteration ) {
-    x2 <- x[x1] - y[x1]*(x[x1] - x0])/(y[x1] - y[x0])
-    if (abs(x2 - x1) < precision) {
-      return(x2)
-    }
-    x0 <- x1
-    x1 <- x2
-  }
-  stop("Exceeded allowed number of interactions")
-}
-
+exp_conditions <- list("CD4" = cd4.t, "CD8" = cd8.t)
 n <- 0
 for (exp in exp_conditions) {
   nam <- names(exp_conditions)[n]
@@ -164,9 +162,7 @@ for (exp in exp_conditions) {
             saveTOMs = TRUE,
             saveTOMFileBase = paste0("samples_", nam, "_TOM"),
             verbose = 1)
-  print("\n")
   table(net$colors)
-  print("\n")
 
   pdf(paste0("modules_", nam, ".pdf"))
   # open a graphics window
