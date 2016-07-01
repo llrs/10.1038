@@ -75,26 +75,12 @@ legend("topright", legend = c("CD8", "CD4"),
        fill = c("red", "blue"))
 # Lacks of the filtering using inflexion point of the ranked list of mad.
 dev.off()
-#
-# fitl <- loess(perc.cd4~cd4.mad)
-# xl <- seq(min(cd4.mad), max(cd4.mad), (max(cd4.mad) - min(cd4.mad))/1000)
-# out <- predict(fitl, xl)
-# infl <- c(FALSE, diff(diff(out) > 0) != 0)
-# plot(fitl)
-#
-# secant_method <- function(x, fun, x0, x1, iteration = 500, precision = 0.05, ...) {
-#   for (i in 1:iteration ) {
-#     x2 <- x[x1] - fun(x1, ...)*(x1 - x0)/(fun(x1, ...) - fun(x0, ...))
-#     if (abs(x2 - x1) < precision) {
-#       return(x2)
-#     }
-#     x0 <- x1
-#     x1 <- x2
-#   }
-#   stop("Exceeded allowed number of interactions")
-# }
 
-exp_conditions <- list("CD4" = cd4.t, "CD8" = cd8.t)
+# Filtering those that are above the infl point
+exp_conditions <- list("CD4" = cd4.t[, names(cd4.mad >= infl.4[1, 3])],
+                       "CD8" = cd8.t[, names(cd8.mad >= infl.8[1, 3])])
+print(paste("Filtering to", sum(cd4.mad >= infl.4[1, 3]),
+            "CD4 genes and", sum(cd8.mad >= infl.8[1, 3]), "CD8 genes"))
 n <- 0
 for (exp in exp_conditions) {
   n <- n + 1
@@ -125,26 +111,28 @@ for (exp in exp_conditions) {
   clust <- cutreeStatic(sampleTree)
   print(table(clust))
 
+  # Choose a set of soft-thresholding powers
+  powers <-  c(1:30)
   # Call the network topology analysis function
-  sft <- pickSoftThreshold(exp, verbose = 5, RsquaredCut = 0.6)
+  sft <- pickSoftThreshold(exp, verbose = 5, RsquaredCut = 0.8,
+                           powerVector = powers)
 
   # Plot them
-  png(paste0("threshold_", nam, ".png"))
+  png(paste0("threshold_", nam, ".png"), width = height = 800)
   pars_org <- par(mfrow = c(1,2));
-  cex1 = 0.9
-  # Choose a set of soft-thresholding powers
-  powers = c(c(1:10), seq(from = 12, to = 20, by = 2))
+  cex1 <- 0.9
+  ymin <- min(-sign(sft$fitIndices[,"slope"])*sft$fitIndices[, "SFT.R.sq"])
   # Scale-free topology fit index as a function of the soft-thresholding power
   plot(sft$fitIndices[, "Power"],
        -sign(sft$fitIndices[,"slope"])*sft$fitIndices[, "SFT.R.sq"],
        xlab = "Soft Threshold (power)",
        ylab = "Scale Free Topology Model Fit, signed R^2", type = "n",
-       main = "Scale independence")
+       main = "Scale independence", ylim = c(ymin, 1))
   text(sft$fitIndices[, "Power"],
        -sign(sft$fitIndices[,"slope"])*sft$fitIndices[, "SFT.R.sq"],
        labels = powers, cex = cex1, col = "red")
   # this line corresponds to using an R^2 cut-off of h
-  abline(h = 0.90, col = "red")
+  abline(h = 0.80, col = "red")
   # Mean connectivity as a function of the soft-thresholding power
   plot(sft$fitIndices[, "Power"], sft$fitIndices[, "mean.k."],
        xlab = "Soft Threshold (power)", ylab = "Mean Connectivity", type = "n",
@@ -155,6 +143,9 @@ for (exp in exp_conditions) {
 
   if (is.null(sft$powerEstimate)) {
     stop("RsquaredCut option of the pickSoftThreshold too height.\n")
+  }
+  if (is.na(sft$powerEstimate)) {
+    sft$powerEstimate <- 25
   }
   cat(paste0("Value of power used is ", sft$powerEstimate, ".\n"))
 
