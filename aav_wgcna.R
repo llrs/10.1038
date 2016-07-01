@@ -57,9 +57,15 @@ count.p <- function(data, per){
 
 perc.cd4 <- unlist(lapply(cd4.mad, count.p, data = cd4.mad))
 perc.cd8 <- unlist(lapply(cd8.mad, count.p, data = cd8.mad))
+
+# Calculating the inflection points
 library("inflection")
-infl.4 <- findiplist(cd4.mad, perc.cd4, 0)
-infl.8 <- findiplist(cd8.mad, perc.cd8, 0)
+infl.4 <- ede(cd4.mad, perc.cd4, 0)
+infl.8 <- ede(cd8.mad, perc.cd8, 0)
+
+print(infl.4)
+print(infl.8)
+
 png("MAD_filtering.png", width = 1200, height = 1200)
 plot(cd4.mad, perc.cd4,
   ylab = "Proportion of points over", main = "MAD score", col = "blue")
@@ -91,9 +97,9 @@ dev.off()
 exp_conditions <- list("CD4" = cd4.t, "CD8" = cd8.t)
 n <- 0
 for (exp in exp_conditions) {
+  n <- n + 1
   nam <- names(exp_conditions)[n]
   cat(paste("Working with new data", nam, "\n"))
-  n <- n + 1
   # Checking if genes expression is ok
   gsg <- goodSamplesGenes(exp, verbose = 3)
   if (!gsg$allOK) {
@@ -114,22 +120,20 @@ for (exp in exp_conditions) {
   }
   sampleTree <- hclust(dist(exp), method = "average")
   pdf(paste0("sampletree_", nam, ".pdf"))
-  plot(sampleTree)
+  plot(sampleTree, main = nam)
   dev.off()
   clust <- cutreeStatic(sampleTree)
   print(table(clust))
 
   # Call the network topology analysis function
   sft <- pickSoftThreshold(exp, verbose = 5, RsquaredCut = 0.6)
-  print(str(sft))
 
   # Plot them
-  sizeGrWindow(9, 5)
+  png(paste0("threshold_", nam, ".png"))
   pars_org <- par(mfrow = c(1,2));
   cex1 = 0.9
   # Choose a set of soft-thresholding powers
   powers = c(c(1:10), seq(from = 12, to = 20, by = 2))
-  pdf(paste0("threshold_", nam, ".pdf"))
   # Scale-free topology fit index as a function of the soft-thresholding power
   plot(sft$fitIndices[, "Power"],
        -sign(sft$fitIndices[,"slope"])*sft$fitIndices[, "SFT.R.sq"],
@@ -161,12 +165,10 @@ for (exp in exp_conditions) {
             mergeCutHeight = 0.01,
             saveTOMs = TRUE,
             saveTOMFileBase = paste0("samples_", nam, "_TOM"),
-            verbose = 1)
-  table(net$colors)
+            verbose = 1, loadTOM = TRUE)
+  print(table(net$colors))
 
   pdf(paste0("modules_", nam, ".pdf"))
-  # open a graphics window
-  sizeGrWindow(12, 9)
 
   # Plot the dendrogram and the module colors underneath
   plotDendroAndColors(net$dendrograms[[1]],
@@ -191,7 +193,6 @@ for (exp in exp_conditions) {
   #         xlab = "Eigengenes", ylab = "% Explained", outline = FALSE)
   # stripchart(t(as.matrix(MEs0$varExplained)), add = TRUE, vertical = T,
   #            pch = 21, bg = substring(colnames(MEs0$eigengenes), 3), method = "jitter")
-  # sizeGrWindow(10,6)
   # # Will display correlations and their p-values
   # textMatrix <-  paste(ifelse(
   #   moduleTraitPvalue <= 0.1 & abs(moduleTraitCor) >= 0.3, "* ", ""),
